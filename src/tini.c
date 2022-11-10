@@ -348,11 +348,11 @@ int add_expect_status(char *arg) {
 }
 
 // Concatenates a substring from one string to another.
-char *strcatslice(char *dst, char *src, size_t start, size_t end, size_t size) {
-  char buf[];
+char *strcatslice(char *dst, char *src, int start, int end, size_t size) {
+  char buf[4096];
   int i, j = 0;
 
-  for (i = 0; i < size; i++) {
+  for (i = 0; i < (int)size; i++) {
     if (i >= start && i <= end) {
       buf[j] = src[i];
       j++;
@@ -360,7 +360,7 @@ char *strcatslice(char *dst, char *src, size_t start, size_t end, size_t size) {
     buf[j] = '\0';
   }
 
-  strlcat(dst, buf, end - start);
+  strncat(dst, buf, end - start);
 
   return dst;
 }
@@ -375,7 +375,7 @@ void parse_and_replace_with_env_var(char buf[], char *const arg) {
   char env[] = {'\0'};
 
   int i;
-  for (i = 0; i <= strlen(arg); i++) {
+  for (i = 0; i <= (int)strlen(arg); i++) {
     if (arg[i] == *dollar && arg[i + 1] == *lbrace) {
       start = i + 2;
     }
@@ -403,7 +403,7 @@ void parse_and_replace_with_env_var(char buf[], char *const arg) {
       memmove(&value[0], &value[1], strlen(value));
     }
 
-    strlcat(buf, value, 4096);
+    strncat(buf, value, 4096);
   }
 }
 
@@ -484,7 +484,7 @@ int parse_args(const int argc, char *const argv[],
 
   int i;
   for (i = 0; i < argc - optind; i++) {
-    char buf[] = {'\0'};
+    char buf[4096] = {'\0'};
     parse_and_replace_with_env_var(buf, argv[optind + 1]);
     (**child_args_ptr_ptr)[i] = buf;
   }
